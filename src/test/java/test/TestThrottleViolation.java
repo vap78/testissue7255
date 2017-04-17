@@ -27,7 +27,7 @@ import com.google.gson.JsonParser;
 public class TestThrottleViolation {
   
   private static final String APP_KEY = "10Dhx17f)ejWEM)gWsiPvw((";
-  private static final String URL_PATTERN = "https://api.stackexchange.com/2.2/questions?filter=!.UE8F0bVg4M-_k0d&"
+  private static final String URL_PATTERN = "https://api.stackexchange.com/2.2/questions?filter=!2rt.po)yToP4&"
       + "site=%s&"
       + "tagged=%s&"
       + "fromDate=%s&"
@@ -46,12 +46,20 @@ public class TestThrottleViolation {
       for (String tag : tags) {
         System.out.println("Call # " + count++);
         String url = String.format(URL_PATTERN, "superuser", tag, month.getFrom(), month.getTo(), APP_KEY);
-        callURL(url);
+        boolean isFailed = false;
+        int retryCount = 0;
+        do {
+          retryCount++;
+          callURL(url);
+          if (retryCount > 5) {
+            throw new IOException("Received an error response 5 times in a row. Failing!");
+          }
+        } while (isFailed);
       }
     }
   }
   
-  private void callURL(String urlStr) throws IOException {
+  private boolean callURL(String urlStr) throws IOException {
     logURL(urlStr);
     URL url = new URL(urlStr);
     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -69,12 +77,17 @@ public class TestThrottleViolation {
       logResponseBody(response);
       handleBackoff(response);
       if (conn.getResponseCode() != 200) {
-        throw new IOException("Received error response. Status code: " + conn.getResponseCode());
+        try {
+          Thread.sleep(5000);
+        } catch (InterruptedException e) {
+        }
+        return false;
       }
     } finally {
       inputStream.close();
       conn.disconnect();
     }
+    return true;
   }
 
 

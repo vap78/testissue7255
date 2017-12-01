@@ -71,7 +71,7 @@ public class TestThrottleViolation {
       if (conn.getResponseCode() != 200) {
         throw new IOException("Received error response code: " + conn.getResponseCode());
       }
-      Thread.sleep(200);
+      Thread.sleep(1000);
     } finally {
       inputStream.close();
       conn.disconnect();

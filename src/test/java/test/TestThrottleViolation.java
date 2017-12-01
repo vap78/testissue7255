@@ -46,15 +46,7 @@ public class TestThrottleViolation {
       for (String tag : tags) {
         System.out.println("Call # " + count++);
         String url = String.format(URL_PATTERN, "superuser", tag, month.getFrom(), month.getTo(), APP_KEY);
-        boolean isFailed = false;
-        int retryCount = 0;
-        do {
-          retryCount++;
-          callURL(url);
-          if (retryCount > 5) {
-            throw new IOException("Received an error response 5 times in a row. Failing!");
-          }
-        } while (isFailed);
+        callURL(url);
       }
     }
   }
@@ -77,12 +69,7 @@ public class TestThrottleViolation {
       logResponseBody(response);
       handleBackoff(response);
       if (conn.getResponseCode() != 200) {
-        try {
-          System.out.println("Received error response code: " + conn.getResponseCode() + ". Sleeping for 15 seconds.");
-          Thread.sleep(15000);
-        } catch (InterruptedException e) {
-        }
-        return false;
+        throw new IOException("Received error response code: " + conn.getResponseCode());
       }
       Thread.sleep(200);
     } finally {

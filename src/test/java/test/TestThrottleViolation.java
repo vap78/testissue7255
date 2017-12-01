@@ -59,7 +59,7 @@ public class TestThrottleViolation {
     }
   }
   
-  private boolean callURL(String urlStr) throws IOException {
+  protected boolean callURL(String urlStr) throws IOException, InterruptedException {
     logURL(urlStr);
     URL url = new URL(urlStr);
     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -78,11 +78,13 @@ public class TestThrottleViolation {
       handleBackoff(response);
       if (conn.getResponseCode() != 200) {
         try {
-          Thread.sleep(5000);
+          System.out.println("Received error response code: " + conn.getResponseCode() + ". Sleeping for 15 seconds.");
+          Thread.sleep(15000);
         } catch (InterruptedException e) {
         }
         return false;
       }
+      Thread.sleep(200);
     } finally {
       inputStream.close();
       conn.disconnect();
@@ -103,7 +105,7 @@ public class TestThrottleViolation {
     return response;
   }
 
-  private void handleBackoff(String response) {
+  protected void handleBackoff(String response) {
     JsonObject responseJson = getAsJsonObject(response);
     JsonElement backoffElement = responseJson.get("backoff");
     if (backoffElement != null) {
@@ -153,7 +155,7 @@ public class TestThrottleViolation {
 
   private static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
 
-  private static void logResponseBody(String respBody) {
+  protected static void logResponseBody(String respBody) {
     
     System.out.println("[" + dtf.format(LocalDateTime.now()) + "] Response body received: ");
     System.out.println(respBody);

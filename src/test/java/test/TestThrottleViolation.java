@@ -47,6 +47,7 @@ public class TestThrottleViolation {
         System.out.println("Call # " + count++);
         String url = String.format(URL_PATTERN, "superuser", tag, month.getFrom(), month.getTo(), APP_KEY);
         callURL(url);
+        Thread.sleep(5000);
       }
     }
   }
@@ -71,7 +72,6 @@ public class TestThrottleViolation {
       if (conn.getResponseCode() != 200) {
         throw new IOException("Received error response code: " + conn.getResponseCode());
       }
-      Thread.sleep(1000);
     } finally {
       inputStream.close();
       conn.disconnect();
